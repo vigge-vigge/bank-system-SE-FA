@@ -294,6 +294,19 @@ class ATM {
             }
         }
     }
+
+    public double getCashAvailable() {
+        return cashAvailable;
+    }
+
+    public void addCash(double amount) {
+        if (amount > 0) {
+            cashAvailable += amount; // Add the specified amount to the available cash
+            System.out.println("Cash added successfully. New total cash available: " + cashAvailable);
+        } else {
+            System.out.println("Invalid cash amount. Amount must be greater than 0.");
+        }
+    }
 }
 
 // Main class to run the banking system
