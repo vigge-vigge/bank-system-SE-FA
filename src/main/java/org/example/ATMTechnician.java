@@ -1,7 +1,7 @@
 package org.example;  // Declare the package for the ATMTechnician class
 
 import java.io.*;  // Import necessary classes for file handling and input/output
-import java.util.Scanner;  // Import Scanner for reading user input (although it's not used in this class)
+
 
 public class ATMTechnician {  // Define the ATMTechnician class
     private double cash;  // Variable to hold the amount of cash in the ATM
@@ -31,6 +31,10 @@ public class ATMTechnician {  // Define the ATMTechnician class
     public void addCash(double amount) {
         this.cash += amount;  // Increase the cash by the given amount
         saveTechnician();  // Save the updated technician status after adding cash
+    }
+
+    public double getCash() {
+        return cash;
     }
 
     // Method to add ink to the ATM

@@ -5,38 +5,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>bankSys</artifactId>
+    <artifactId>bank-test</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
 
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- Add dependencies here -->
     <dependencies>
         <!-- JUnit 5 dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.8.1</version> <!-- Ensure you're using JUnit 5 -->
+            <version>5.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.8.1</version> <!-- Ensure you use the correct JUnit 5 engine -->
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito for mocking dependencies in tests -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>3.7.7</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Mockito JUnit 5 extension for better integration with JUnit 5 -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.7.7</version>
+            <version>5.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -49,14 +39,11 @@
 
     <build>
         <plugins>
-            <!-- Surefire plugin to run JUnit tests -->
+            <!-- Surefire plugin to run tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <configuration>
-                    <useJUnitPlatform>true</useJUnitPlatform> <!-- Ensures JUnit 5 tests are executed -->
-                </configuration>
+                <version>2.22.2</version>
             </plugin>
         </plugins>
     </build>

@@ -1,114 +1,189 @@
-package org.example;  // Declare the package that this class belongs to.
+package org.example;
 
-import org.junit.jupiter.api.BeforeEach;  // Import necessary JUnit annotations for test setup.
-import org.junit.jupiter.api.Test;  // Import the JUnit Test annotation to mark test methods.
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.ByteArrayInputStream;  // Import necessary class to simulate user input via byte array.
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.*;  // Import JUnit assertion methods to check results.
+import static org.junit.Assert.*;
 
-public class ATMTest {  // Define the ATMTest class where all tests are located.
-    private Customer customer;  // Declare a Customer instance for use in tests.
-    private ATMTechnician technician;  // Declare an ATMTechnician instance for use in tests.
-    private ATM atm;  // Declare an ATM instance for testing.
+public class ATMTest {
 
-    @BeforeEach  // Annotation to indicate that the following method should run before each test method.
-    public void setup() {
-        // Initialize the customer with a balance via the constructor.
-        customer = new Customer("Alice", "123456", 1000.0, "1234");  // Create a new customer with a balance of 1000.
+    private String customerBalanceFilePath = "customer_balance.txt";
+    private String atmStatusFilePath = "atm_status.txt";
+    private String transferHistoryFilePath = "transfer_history.txt";
 
-        // Initialize the technician with various attributes (e.g., password, cash, ink, and paper amounts).
-        technician = new ATMTechnician("password123", 1000.0, 49.5, 499.0);  // Set up a technician with initial values.
+    @Before
+    public void setUp() throws IOException {
+        // Create default customer balance file
+        createDefaultCustomerFile();
 
-        // Initialize the ATM with customer and technician instances.
-        atm = new ATM(customer, technician);  // Create an ATM object with customer and technician.
+        // Create default ATM status file
+        createDefaultATMStatusFile();
+
+        // Delete transfer history file to ensure a clean state
+        File transferHistoryFile = new File(transferHistoryFilePath);
+        if (transferHistoryFile.exists()) {
+            transferHistoryFile.delete();
+        }
     }
 
-    @Test  // Marks the following method as a test to be executed by the testing framework.
-    public void testCheckBalance() throws Exception {
-        // Check initial balance directly through the customer's getter.
-        assertEquals(1000, customer.getBalance(), "Initial balance should be 1000");  // Assert that the initial balance is 1000.
-
-        // Simulate checking balance by starting the ATM session for the customer.
-        atm.startCustomerSession();  // This triggers the ATM session, which should display the balance.
+    @After
+    public void tearDown() {
+        // Clean up files after each test
+        deleteFile(customerBalanceFilePath);
+        deleteFile(atmStatusFilePath);
+        deleteFile(transferHistoryFilePath);
     }
 
-    @Test  // Another test method for depositing money into the ATM.
-    public void testDeposit() throws Exception {
-        double depositAmount = 500;  // Declare the deposit amount for the test.
-
-        // Simulate the customer interacting with the ATM to make a deposit.
-        atm.startCustomerSession();  // This starts the ATM session for the customer.
-        customer.deposit(depositAmount);  // Directly call the deposit method to increase the balance by 500.
-
-        // Assert that after the deposit, the balance should be 1500.
-        assertEquals(1500, customer.getBalance(), "Balance after deposit should be 1500");  // Assert balance after deposit.
+    private void createDefaultCustomerFile() throws IOException {
+        File file = new File(customerBalanceFilePath);
+        if (!file.exists()) {
+            Files.write(Paths.get(customerBalanceFilePath),
+                    ("123456,Alice,1000.0,1234\n" +
+                            "987654,Bob,500.0,5678").getBytes());
+        }
     }
 
-    @Test  // Test method for withdrawing money from the ATM.
-    public void testWithdraw() throws Exception {
-        String input = "200\n";  // Simulate user input (withdrawing 200).
-
-        // Set the input stream to simulate user input during the ATM session.
-        System.setIn(new ByteArrayInputStream(input.getBytes()));  // Redirect System.in to simulate input for withdrawal.
-
-        double initialBalance = customer.getBalance();  // Store the initial balance of the customer before withdrawal.
-
-        atm.startCustomerSession();  // Start the ATM session, which will use the simulated input for withdrawal.
-
-        // Assert that after the withdrawal, the balance is correctly reduced by 200.
-        assertEquals(initialBalance - 200, customer.getBalance(), "Balance after withdrawal should be correct");  // Check balance after withdrawal.
+    private void createDefaultATMStatusFile() throws IOException {
+        File file = new File(atmStatusFilePath);
+        if (!file.exists()) {
+            Files.write(Paths.get(atmStatusFilePath), "password123,1000.0,50.0,500.0".getBytes());
+        }
     }
 
-    @Test  // Test method for transferring money between customers.
-    public void testTransferMoney() throws Exception {
-        // Create a recipient customer to transfer funds to.
-        Customer recipientCustomer = new Customer("67890", "67890", 500.0, "0000");  // Initialize recipient with an initial balance.
-
-        double transferAmount = 200;  // Amount to transfer in this test case.
-
-        // Simulate the ATM session to trigger the transfer.
-        atm.startCustomerSession();  // Start the ATM session for the customer to initiate the transfer.
-        customer.transferFunds(recipientCustomer, transferAmount);  // Direct method call for transfer of funds.
-
-        // Assert that after the transfer, the balances are updated correctly.
-        assertEquals(800, customer.getBalance(), "Customer's balance after transfer should be correct");  // Assert customer's balance.
-        assertEquals(700, recipientCustomer.getBalance(), "Recipient's balance after transfer should be correct");  // Assert recipient's balance.
+    private void deleteFile(String filePath) {
+        File file = new File(filePath);
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
-    @Test  // Test method to simulate technician adding cash to the ATM.
-    public void testTechnicianAddCash() {
-        double cashAmount = 500;  // Amount of cash the technician will add to the ATM.
+    // Unit Test 1: Test Transfer Functionality
+    @Test
+    public void testTransferFunds() throws Exception {
+        // Create sender and recipient customers
+        Customer sender = new Customer("Alice", "123456", 1000.0, "1234");
+        Customer recipient = new Customer("Bob", "987654", 500.0, "5678");
 
-        // Simulate starting the technician session to add cash.
-        atm.startTechnicianSession();  // Start the technician's session.
-        technician.addCash(cashAmount);  // Call the technician's method to add the specified cash amount.
+        // Perform a transfer
+        double amount = 200.0;
+        sender.transferFunds(recipient, amount);
 
-        // Add an assertion here to check the technician's cash balance if necessary, e.g.:
-        // assertEquals(technician.getCash(), 500);  // This would verify the technician's cash balance.
+        // Verify balances
+        assertEquals(800.0, sender.getBalance(), 0.01); // Sender balance reduced by 200
+        assertEquals(700.0, recipient.getBalance(), 0.01); // Recipient balance increased by 200
+
+        // Verify the transfer log was written
+        File file = new File(transferHistoryFilePath);
+        assertTrue(file.exists());
+
+        String content = new String(Files.readAllBytes(Paths.get(transferHistoryFilePath)));
+        assertTrue(content.contains("Sender: 123456 (Alice) -> Recipient: 987654 (Bob) Amount: 200.0"));
     }
 
-    @Test  // Test method for adding ink to the ATM.
-    public void testTechnicianAddInk() {
-        double inkAmount = 20;  // Amount of ink the technician will add.
+    // Unit Test 2: Test File Creation and Logging
+    @Test
+    public void testFileCreationAndLogging() throws Exception {
+        // Ensure the file does not exist initially
+        File file = new File(transferHistoryFilePath);
+        assertFalse(file.exists());
 
-        // Simulate the technician session to add ink.
-        atm.startTechnicianSession();  // Start the technician's session.
-        technician.addInk(inkAmount);  // Add the specified ink amount to the ATM.
+        // Create sender and recipient customers
+        Customer sender = new Customer("Alice", "123456", 1000.0, "1234");
+        Customer recipient = new Customer("Bob", "987654", 500.0, "5678");
 
-        // You could add an assertion here to verify ink levels, e.g.:
-        // assertEquals(technician.getInk(), 20);  // Check if ink has been added correctly.
+        // Perform a transfer to trigger file creation and logging
+        sender.transferFunds(recipient, 300.0);
+
+        // Verify the file was created
+        assertTrue(file.exists());
+
+        // Read the file content and verify the log
+        String content = new String(Files.readAllBytes(Paths.get(transferHistoryFilePath)));
+        assertTrue(content.contains("Sender: 123456 (Alice) -> Recipient: 987654 (Bob) Amount: 300.0"));
+
+        // Perform another transfer to ensure logs are appended
+        sender.transferFunds(recipient, 100.0);
+
+        // Read the file content again and verify both logs are present
+        content = new String(Files.readAllBytes(Paths.get(transferHistoryFilePath)));
+        assertTrue(content.contains("Sender: 123456 (Alice) -> Recipient: 987654 (Bob) Amount: 300.0"));
+        assertTrue(content.contains("Sender: 123456 (Alice) -> Recipient: 987654 (Bob) Amount: 100.0"));
     }
 
-    @Test  // Test method for adding paper to the ATM.
-    public void testTechnicianAddPaper() {
-        double paperAmount = 100;  // Amount of paper the technician will add.
+    // Integration Test 1: Test Customer Login and Transfer via ATM
+    @Test
+    public void testCustomerLoginAndTransferViaATM() throws Exception {
+        // Load technician and customer data
+        ATMTechnician technician = ATMTechnician.loadTechnician();
+        Customer sender = Customer.loadCustomer("1234", false); // Alice logs in with PIN
+        Customer recipient = Customer.loadCustomer("987654", true); // Bob loaded by account number
 
-        // Simulate the technician session to add paper to the ATM.
-        atm.startTechnicianSession();  // Start the technician's session.
-        technician.addPaper(paperAmount);  // Add the specified amount of paper.
+        assertNotNull(sender); // Ensure sender is loaded successfully
+        assertNotNull(recipient); // Ensure recipient is loaded successfully
 
-        // You could add an assertion here to verify the paper count, e.g.:
-        // assertEquals(technician.getPaper(), 100);  // Check if paper has been added correctly.
+        // Initialize ATM with the logged-in customer and technician
+        ATM atm = new ATM(sender, technician);
+
+        // Perform a transfer
+        double initialSenderBalance = sender.getBalance();
+        double initialRecipientBalance = recipient.getBalance();
+        double transferAmount = 200.0;
+
+        sender.transferFunds(recipient, transferAmount);
+
+        // Verify balances are updated
+        assertEquals(initialSenderBalance - transferAmount, sender.getBalance(), 0.01);
+        assertEquals(initialRecipientBalance + transferAmount, recipient.getBalance(), 0.01);
+
+        // Verify the transfer log is written to the file
+        File transferHistoryFile = new File(transferHistoryFilePath);
+        assertTrue(transferHistoryFile.exists());
+
+        String content = new String(Files.readAllBytes(Paths.get(transferHistoryFilePath)));
+        assertTrue(content.contains("Sender: 123456 (Alice) -> Recipient: 987654 (Bob) Amount: 200.0"));
+    }
+
+    // Integration Test 2: Test Technician Login and ATM Status Update
+    @Test
+    public void testTechnicianLoginAndUpdateATMStatus() throws Exception {
+        // Load technician
+        ATMTechnician technician = ATMTechnician.loadTechnician();
+        assertNotNull(technician); // Ensure technician is loaded successfully
+
+        // Simulate technician login with correct password
+        boolean isValidPassword = technician.validatePassword("password123");
+        assertTrue(isValidPassword);
+
+        // Add cash, ink, and paper
+        double initialCash = technician.getCash();
+        double initialInk = technician.getInk();
+        double initialPaper = technician.getPaper();
+
+        double addedCash = 500.0;
+        double addedInk = 10.0;
+        double addedPaper = 200.0;
+
+        technician.addCash(addedCash);
+        technician.addInk(addedInk);
+        technician.addPaper(addedPaper);
+
+        // Verify updated ATM status
+        assertEquals(initialCash + addedCash, technician.getCash(), 0.01);
+        assertEquals(initialInk + addedInk, technician.getInk(), 0.01);
+        assertEquals(initialPaper + addedPaper, technician.getPaper(), 0.01);
+
+        // Verify the updated status is persisted in the file
+        File atmStatusFile = new File(atmStatusFilePath);
+        assertTrue(atmStatusFile.exists());
+
+        String content = new String(Files.readAllBytes(Paths.get(atmStatusFilePath)));
+        assertTrue(content.contains("password123," + (initialCash + addedCash) + "," +
+                (initialInk + addedInk) + "," + (initialPaper + addedPaper)));
     }
 }
