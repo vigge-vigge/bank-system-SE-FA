@@ -32,7 +32,7 @@ public class ATMTechnician {  // Define the ATMTechnician class
         this.cash += amount;  // Increase the cash by the given amount
         saveTechnician();  // Save the updated technician status after adding cash
     }
-
+    
     public double getCash() {
         return cash;
     }

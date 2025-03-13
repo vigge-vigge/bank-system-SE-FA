@@ -1,0 +1,1 @@
+[2025-03-13 17:25:20] Sender: 123456 (Alice) -> Recipient: 567890 (Vigge) Amount: 100.0
